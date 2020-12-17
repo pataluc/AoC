@@ -16,7 +16,7 @@ def neighbours(x, y, z):
             for y_offset in range(-1, 2)
             for z_offset in range(-1, 2))
 
-def neighbours4(x, y, z, w):    
+def neighbours4(x, y, z, w):
     return set((x + x_offset, y + y_offset, z + z_offset, w + w_offset)
             for x_offset in range(-1, 2)
             for y_offset in range(-1, 2)
@@ -25,16 +25,12 @@ def neighbours4(x, y, z, w):
 
 def process(actives, neighbours_function):
     new_actives = set()
-    actives_and_neighbours = set()
-    for cell in actives:
-        actives_and_neighbours = actives_and_neighbours.union(neighbours_function(*cell))
-
-    for cell in actives_and_neighbours:        
+    for cell in set.union(*[neighbours_function(*cell) for cell in actives]):
         nb_active_neighours = len(actives & neighbours_function(*cell))
         if (cell not in new_actives
             and ((cell in actives and 3 <= nb_active_neighours <= 4)
             or (cell not in actives and nb_active_neighours == 3))):
-            new_actives.add(cell)            
+            new_actives.add(cell)
     return new_actives
 
 for i in range(6):
