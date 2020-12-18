@@ -12,16 +12,16 @@ for x, line in enumerate(lines):
 
 def neighbours(x, y, z):
     return set((x + x_offset, y + y_offset, z + z_offset)
-            for x_offset in range(-1, 2)
-            for y_offset in range(-1, 2)
-            for z_offset in range(-1, 2))
+            for x_offset in (-1,0,1)
+            for y_offset in (-1,0,1)
+            for z_offset in (-1,0,1))
 
 def neighbours4(x, y, z, w):
     return set((x + x_offset, y + y_offset, z + z_offset, w + w_offset)
-            for x_offset in range(-1, 2)
-            for y_offset in range(-1, 2)
-            for z_offset in range(-1, 2)
-            for w_offset in range(-1, 2))
+            for x_offset in (-1,0,1)
+            for y_offset in (-1,0,1)
+            for z_offset in (-1,0,1)
+            for w_offset in (-1,0,1))
 
 def process(actives, neighbours_function):
     new_actives = set()
