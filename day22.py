@@ -9,27 +9,21 @@ def battle(deck1, deck2, recurse_game = False):
         if recurse_game:
             if "%s|%s" % (" ".join(map(str, deck1)), " ".join(map(str, deck2))) in previous_rounds:
                 return ([1], []) # instant win for P1
-            
             previous_rounds.add("%s|%s" % (" ".join(map(str, deck1)), " ".join(map(str, deck2))))
 
-        card1 = deck1.pop(0)
-        card2 = deck2.pop(0)        
+        card1, card2 = deck1.pop(0), deck2.pop(0)
 
-        if recurse_game and len(deck1) >= card1 and len(deck2) >= card2:              
-            d1, d2 = battle(deck1[:card1].copy(), deck2[:card2].copy(), True)
-            if len(d1):
-                deck1.append(card1)
-                deck1.append(card2)
-            else:
-                deck2.append(card2)
-                deck2.append(card1)
+        if recurse_game and len(deck1) >= card1 and len(deck2) >= card2:
+            r1, r2 = battle(deck1[:card1].copy(), deck2[:card2].copy(), True)
+            p1_wins = len(r1)
         else:
-            if card1 > card2:
-                deck1.append(card1)
-                deck1.append(card2)
-            else:
-                deck2.append(card2)
-                deck2.append(card1)        
+            p1_wins = card1 > card2
+
+        if p1_wins:
+            deck1.extend([card1, card2])
+        else:
+            deck2.extend([card2, card1])
+
     return deck1, deck2
 
 # Ex 1
