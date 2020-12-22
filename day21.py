@@ -36,26 +36,16 @@ print("Ex 1: %d, no allergens: " % count, no_allergens)
 
 
 def solve(allergens_ingredients, result = dict()):
-    #print(result)
     for allergen, ingredients in allergens_ingredients.items():
-        #print(ingredients - set(result.values()))
         if len(ingredients - set(result.values())) == 1:
             ingredient = (ingredients - set(result.values())).pop()
             result[allergen] = ingredient
-            #print("%s contains %s" % (ingredient, allergen))
 
     if len(result) != len(allergens_ingredients):
         return solve(allergens_ingredients, result)
     else:
         return result
-    
-    #for allergen, ingredients in allergens_ingredients.items():
-    #    f
-#
-    #    print(allergen)
-    #    print(ingredients)
 
 allergenic = solve(allergens_ingredients)
 
 print("Ex 2: %s" % ",".join(list(map(lambda a: allergenic[a], sorted(allergenic.keys())))))
-#print(ingredients_allergens)
