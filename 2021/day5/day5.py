@@ -23,7 +23,7 @@ def apply_vent(grid, vent):
         for x in range(min(x1, x2), max(x1, x2) + 1):
             grid[x][y1] += 1         
     else: #diag
-        for i, j in list(zip(range(0, dir_x + x2 - x1, dir_x), range(0, dir_y + y2 - y1, dir_y))):
+        for i, j in zip(range(0, dir_x + x2 - x1, dir_x), range(0, dir_y + y2 - y1, dir_y)):
             grid[x1 + i][y1 + j] += 1               
 
 def ex1():
