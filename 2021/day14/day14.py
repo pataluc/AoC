@@ -31,7 +31,7 @@ def ex(input, rounds = 1):
         else:
             t[template[i:i+2]] = 1
 
-    for i in range(rounds):
+    for _ in range(rounds):
         t = process(t, intructions)
 
     r = {}
