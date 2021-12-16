@@ -23,8 +23,8 @@ def get_literal(packet):
             return int(r, 2), v[i*5+5:]
         i += 1
 
-sample = load("sample.txt")
-input = load("input.txt")
+def get_literal_only(packet):
+    return get_literal(packet)[0]
 
 bin_number = hex_to_binary("D2FE28")
 assert bin_number == "110100101111111000101000"
@@ -39,66 +39,92 @@ assert bin_number == "00111000000000000110111101000101001010010001001000000000"
 assert get_packet_version(bin_number) == 1
 assert get_packet_type(bin_number) == 6
 
-def parse_packet(packet, packets = []):
-    version = get_packet_version(packet)
+def array_prod(array):
+    produit = 1
+    for element in array:
+        produit = produit*element
+    return produit
+
+operations = {
+    0: ("somme", sum),
+    1: ("produit", array_prod),
+    2: ("min", min),
+    3: ("max", max),
+    5: ("plus grand", lambda x: 1 if x[0] > x[1] else 0),
+    6: ("plus petit", lambda x: 1 if x[0] < x[1] else 0),
+    7: ("egal", lambda x: 1 if x[0] == x[1] else 0)
+}
+
+def evaluate(list, operation):
+    return operations[operation][1](list)
+
+debug = True
+
+def parse_packet(packet, packets = [], version = 0, inc = -1):
+    inc += 1
+    version += get_packet_version(packet)
     type_id = get_packet_type(packet)
 
     packets.append(packet)
 
     if type_id == 4:
         value, leftover = get_literal(packet)
-        #print("-------- packet literal: %s, version: %d, type_id: %d, value: %d, leftover: %s" % (packet, version, type_id, value, leftover))
-        return packets, leftover
+        if debug: print("%spacket literal, value: %d" % ("  " * inc, value))
+        return packets, leftover, version, value
     else:
+        sub_packets_values = []
         if packet[6] == "0": # length type 0, number of bits in subpackets
             subpackets_length = int(packet[7:22], 2)
-            #print("########\npacket operator: %s, version: %d, type_id: %d, %s bits of subpackets" 
-            #    % (packet, version, type_id, subpackets_length))
+            if debug: print("%stype_id: %s, %s bits of subpackets" 
+                % ("  " * inc, operations[type_id][0], subpackets_length))
             
             l = packet[22:22 + subpackets_length]
             r = packet[22 + subpackets_length:]
             while len(l) > 10 :
-                #print("--------------- %s" % l)
-                packets, l = parse_packet(l, packets)
-            return packets, r
+                packets, l, version, v = parse_packet(l, packets, version, inc)
+                sub_packets_values.append(v)
+            if debug: print("%s%s de " % ("  " * inc, operations[type_id][0]), sub_packets_values, ": %d" % evaluate(sub_packets_values, get_packet_type(packet)))
+            return packets, r, version, evaluate(sub_packets_values, get_packet_type(packet))
         else:                # length type 1, number of subpackets
             subpackets_nb = int(packet[7:18], 2)
-            #print("########\npacket operator: %s, version: %d, type_id: %d, %s subpackets embedded" 
-            #    % (packet, version, type_id, subpackets_nb))
+            if debug: print("%stype_id: %s, %s subpackets embedded" 
+                % ("  " * inc, operations[type_id][0], subpackets_nb))
             
             l = packet[18:]
             for i in range(subpackets_nb):
                 #print("-------------%d-- %s" % (i, l))
-                packets, l = parse_packet(l, packets)
-                
-            return packets, l
+                packets, l, version, v = parse_packet(l, packets, version, inc)
+                sub_packets_values.append(v)
+            
+            if debug: print("%s%s de " % ("  " * inc, operations[type_id][0]), sub_packets_values, ": %d" % evaluate(sub_packets_values, get_packet_type(packet)))
+            return packets, l, version, evaluate(sub_packets_values, get_packet_type(packet))
 
 def ex1(string):
-    #print("\n\n\n%s" % string)
-    packets = parse_packet(hex_to_binary(string), [])
+    result = parse_packet(hex_to_binary(string), [])
+    return result[2]
 
-    #print("#####\nresult")
 
-    #print(list(map(lambda p: (p, get_packet_version(p)), packets[0])))
-    #print(sum(map(get_packet_version, packets[0])))
+def ex2(string):
+    print(hex_to_binary(string))
+    result = parse_packet(hex_to_binary(string), [])
+    return result[3]
 
-    return sum(map(get_packet_version, packets[0]))
 
-#type 0
+input = load("input.txt")
 assert ex1("38006F45291200") == 9
-#type 1
 assert ex1("EE00D40C823060") == 14
-
-
 assert ex1("8A004A801A8002F478") == 16
 assert ex1("620080001611562C8802118E34") == 12
 assert ex1("C0015000016115A2E0802F182340") == 23
 assert ex1("A0016C880162017C3686B18A3D4780") == 31
-
-
 print("ex1 : %d" % ex1(input))
-exit()
 
-
-assert method(sample, 5) == 315
-#print("ex2 : %d" % method(input, 5))
+assert ex2("C200B40A82") == 3
+#assert ex2("04005AC33890") == 54
+assert ex2("880086C3E88112") == 7
+assert ex2("CE00C43D881120") == 9
+assert ex2("D8005AC2A8F0") == 1
+assert ex2("F600BC2D8F") == 0
+assert ex2("9C005AC2F8F0") == 0
+assert ex2("9C0141080250320F1802104A08") == 1
+print("ex2 : %d" % ex2(input))
