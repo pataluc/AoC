@@ -3,7 +3,7 @@ def load(file):
 
 def hex_to_binary( hex_code ):
     b =  bin(int(hex_code, 16))[2:]
-    padding = (4-len(b)%4)%4
+    padding = 4 * len(hex_code) - len(b)
     return '0'*padding + b
 
 def get_packet_version(packet):
@@ -33,11 +33,9 @@ assert get_packet_type(bin_number) == 4
 literal, leftover = get_literal(bin_number)
 assert literal == 2021
 
-
-bin_number = hex_to_binary("38006F45291200")
-assert bin_number == "00111000000000000110111101000101001010010001001000000000"
-assert get_packet_version(bin_number) == 1
-assert get_packet_type(bin_number) == 6
+assert hex_to_binary("38006F45291200") == "00111000000000000110111101000101001010010001001000000000"
+assert get_packet_version(hex_to_binary("38006F45291200")) == 1
+assert get_packet_type(hex_to_binary("38006F45291200")) == 6
 
 def array_prod(array):
     produit = 1
@@ -58,7 +56,6 @@ operations = {
 def evaluate(list, operation):
     return operations[operation][1](list)
 
-debug = True
 
 def parse_packet(packet, packets = [], version = 0, inc = -1):
     inc += 1
@@ -69,34 +66,26 @@ def parse_packet(packet, packets = [], version = 0, inc = -1):
 
     if type_id == 4:
         value, leftover = get_literal(packet)
-        if debug: print("%spacket literal, value: %d" % ("  " * inc, value))
         return packets, leftover, version, value
     else:
         sub_packets_values = []
         if packet[6] == "0": # length type 0, number of bits in subpackets
             subpackets_length = int(packet[7:22], 2)
-            if debug: print("%stype_id: %s, %s bits of subpackets" 
-                % ("  " * inc, operations[type_id][0], subpackets_length))
             
             l = packet[22:22 + subpackets_length]
             r = packet[22 + subpackets_length:]
             while len(l) > 10 :
                 packets, l, version, v = parse_packet(l, packets, version, inc)
                 sub_packets_values.append(v)
-            if debug: print("%s%s de " % ("  " * inc, operations[type_id][0]), sub_packets_values, ": %d" % evaluate(sub_packets_values, get_packet_type(packet)))
             return packets, r, version, evaluate(sub_packets_values, get_packet_type(packet))
         else:                # length type 1, number of subpackets
             subpackets_nb = int(packet[7:18], 2)
-            if debug: print("%stype_id: %s, %s subpackets embedded" 
-                % ("  " * inc, operations[type_id][0], subpackets_nb))
-            
+             
             l = packet[18:]
             for i in range(subpackets_nb):
-                #print("-------------%d-- %s" % (i, l))
                 packets, l, version, v = parse_packet(l, packets, version, inc)
                 sub_packets_values.append(v)
             
-            if debug: print("%s%s de " % ("  " * inc, operations[type_id][0]), sub_packets_values, ": %d" % evaluate(sub_packets_values, get_packet_type(packet)))
             return packets, l, version, evaluate(sub_packets_values, get_packet_type(packet))
 
 def ex1(string):
@@ -105,7 +94,6 @@ def ex1(string):
 
 
 def ex2(string):
-    print(hex_to_binary(string))
     result = parse_packet(hex_to_binary(string), [])
     return result[3]
 
@@ -120,7 +108,7 @@ assert ex1("A0016C880162017C3686B18A3D4780") == 31
 print("ex1 : %d" % ex1(input))
 
 assert ex2("C200B40A82") == 3
-#assert ex2("04005AC33890") == 54
+assert ex2("04005AC33890") == 54
 assert ex2("880086C3E88112") == 7
 assert ex2("CE00C43D881120") == 9
 assert ex2("D8005AC2A8F0") == 1
