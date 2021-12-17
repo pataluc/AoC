@@ -84,6 +84,9 @@ def ex1(target):
                 max_y = r
     #print(max_y)
     return max_y
+
+def ex1_o1(target):
+    return (abs(target['min_y'])-1)*(abs(target['min_y']))/2
             
 def ex2(target):
     soluces = 0
@@ -94,8 +97,8 @@ def ex2(target):
     return soluces
 
 
-assert ex1(sample) == 45
-print("ex1 : %d" % ex1(input))
+assert ex1_o1(sample) == 45
+print("ex1 : %d" % ex1_o1(input))
 
 assert ex2(sample) == 112
 print("ex2 : %d" % ex2(input))
