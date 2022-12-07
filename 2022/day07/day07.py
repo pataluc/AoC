@@ -5,42 +5,50 @@ from sys import argv
 def file_path(file):
     return "%s/%s" % (path.dirname(argv[0]) if path.dirname(argv[0]) else ".", file)
 
-def load(file):
-    raw_stacks, moves = list(map(lambda s: s.split("\n"), open(file_path(file), "r").read().split("\n\n")))
+def du(d, fs):
+    return sum(map(lambda x: int(x.split(" ")[1]), [f for f in fs if d in f and f[-1] != "/"]))
 
-    stacks = [""] * ((len(raw_stacks[0]) + 1) // 4)
+def parse_fs(data):
+    fs = []
+    cwd = '/'
+    dirs = ['/']
+    for c in data:
+        command = c.split("\n")[0]
+        results = c.split("\n")[1:]
+        if command == 'ls':
+            for r in results:
+                if "dir " in r:
+                    fs.append("%s%s/" % (cwd, r.replace("dir ", "")))
+                    dirs.append("%s%s/" % (cwd, r.replace("dir ", "")))
+                else:
+                    s, f = r.split(" ")
+                    fs.append("%s%s %s" % (cwd, f, s))
+        elif command == "cd ..":
+            cwd = "/".join(cwd.split("/")[:-2]) + "/"
+        elif command == "cd /":
+            cwd = "/"
+        elif "cd " in command:
+            cwd = "%s%s/" % (cwd, command.replace("cd ", ""))
     
-    for stack_line in raw_stacks[::-1][1::]:
-        for i in range(len(stacks)):
-            c = stack_line[4*i + 1]
-            if c != ' ':
-                stacks[i] += c
+    return list(map(lambda d: du(d, fs), dirs))
 
-    moves = [list(map(int, re.search('move ([0-9]+) from ([0-9]+) to ([0-9]+)', move).groups())) for move in moves]
-    return stacks, moves
+def load(file):
+    commands = open(file_path(file), "r").read().split("\n$ ")
+    return parse_fs(commands[1:])
 
+def ex1(dirsizes):
+    return sum([size for size in dirsizes if size <= 100000])
 
-def ex1(stacks, moves):
-    for nb_char, stack_from, stack_to in moves:
-        stack_to -= 1
-        stack_from -= 1
-        stacks[stack_to] += stacks[stack_from][-1*nb_char:][::-1]
-        stacks[stack_from] = stacks[stack_from][:-1*nb_char]
-    return "".join(list(map(lambda s: s[-1], stacks)))
+def ex2(dirsizes):
+    dirsizes.sort()
+    target = 30000000 - (70000000 - dirsizes[-1])
+    return [size for size in dirsizes if size > target][0]
 
-def ex2(stacks, moves):
-    for nb_char, stack_from, stack_to in moves:
-        stack_to -= 1
-        stack_from -= 1
-        stacks[stack_to] += stacks[stack_from][-1*nb_char:]
-        stacks[stack_from] = stacks[stack_from][:-1*nb_char]
-    return "".join(list(map(lambda s: s[-1], stacks)))
+sample_dirs = load("sample.txt")
+assert ex1(sample_dirs) == 95437
 
-sample_stacks, sample_moves = load("sample.txt")
-assert ex1(sample_stacks.copy(), sample_moves) == "CMZ"
+dirs = load("input.txt")
+print("ex1 : %s" % ex1(dirs))
 
-stacks, moves = load("input.txt")
-print("ex1 : %s" % ex1(stacks.copy(), moves))
-
-assert ex2(sample_stacks, sample_moves) == "MCD"
-print("ex2 : %s" % ex2(stacks, moves))
+assert ex2(sample_dirs) == 24933642
+print("ex2 : %s" % ex2(dirs))
