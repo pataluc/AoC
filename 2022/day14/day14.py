@@ -53,10 +53,9 @@ def display(data, sand, current_sand, has_floor = False):
         print("%3d %s" % (y + 1, "".join([ "#" * (maxx - minx + 1) ])))
 
 def can_flow(sand_position, rocks, sand):
-    rocks_and_sand = rocks.union(sand)
-    return (sand_position[0],     sand_position[1] + 1) not in rocks_and_sand \
-        or (sand_position[0] - 1, sand_position[1] + 1) not in rocks_and_sand \
-        or (sand_position[0] + 1, sand_position[1] + 1) not in rocks_and_sand
+    return ((sand_position[0], sand_position[1] + 1) not in rocks and (sand_position[0], sand_position[1] + 1) not in sand) \
+        or ((sand_position[0] - 1, sand_position[1] + 1) not in rocks and (sand_position[0] - 1, sand_position[1] + 1) not in sand) \
+        or ((sand_position[0] + 1, sand_position[1] + 1) not in rocks and (sand_position[0] + 1, sand_position[1] + 1) not in sand)
 
 source = (500, 0)
 def ex1(data):
@@ -104,17 +103,13 @@ def ex2(data):
                 sand_position = (sand_position[0] + 1, sand_position[1] + 1)
             # display(data, sand, sand_position, True)
         
-        # if (sand_position[1] < maxy + 1):
-        sand.add(sand_position)
+        if (sand_position[1] < maxy + 2):
+            sand.add(sand_position)
         display(data, sand, None, True)
 
         keep_producing = (sand_position != source)
-    # display(data, sand, None, True)
-        print(len(sand))
 
-    # print(sand)
-
-    return len(list(filter(lambda p: p[1] < maxy + 2, sand)))
+    return len(sand)
 
 sample1 = load("sample.txt")
 
