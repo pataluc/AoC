@@ -21,7 +21,7 @@ class Monkey:
         self.test_true, self.test_false = test_true, test_false
 
     def test(self, value):
-        return (value % divider) == 0
+        return (value % self.divider) == 0
 
     def apply_operation(self, old):
         self.items_inspected += 1
