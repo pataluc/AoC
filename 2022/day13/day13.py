@@ -26,53 +26,49 @@ def compare(l, m, prefix = ""):
             if isinstance(n, int) and isinstance(o, int):
                 if n < o:
                     print("    %s- Left side is smaller, so inputs are in the right order" % prefix) if debug else None
-                    return True
+                    return -1
                 elif n > o:
                     print("    %s- Right side is smaller, so inputs are not in the right order" % prefix) if debug else None
-                    return False
+                    return 1
             elif isinstance(n, list) and isinstance(o, list):
                 if len(n) and len(o):
                     r = compare(n, o, prefix + "  ")
-                    if r != None:
+                    if r != 0:
                         return r
                 elif len(o):
                     print("    %s- Left side ran out of items, so inputs are in the right order" % prefix) if debug else None
-                    return True
+                    return -1
                 elif len(n):
                     print("    %s- Right side ran out of items, so inputs are not in the right order" % prefix) if debug else None
-                    return False
+                    return 1
             elif isinstance(n, list):
                 print("    %s- Mixed types; convert right to [%d] and retry comparison" % (prefix, o)) if debug else None
                 print("    %s- Compare" % prefix, n, "vs", [o]) if debug else None
                 r = compare(n, [o], prefix + "    ")
-                if r != None:
+                if r != 0:
                     return r
             elif isinstance(o, list):
                 print("    %s- Mixed types; convert left to [%d] and retry comparison" % (prefix, n)) if debug else None
                 print("    %s- Compare" % prefix, [n], "vs", o) if debug else None
                 r = compare([n], o, prefix + "    ")
-                if r != None:
+                if r != 0:
                     return r
             i += 1
 
         if i == len(l) and i < len(m):
             print("  %s- Left side ran out of items, so inputs are in the right order" % prefix) if debug else None
-            return True
+            return -1
         elif i < len(l) and i == len(m):
             print("  %s- Right side ran out of items, so inputs are not in the right order" % prefix) if debug else None
-            return False
+            return 1
 
     elif len(m):
         print("  %s- Left side ran out of items, so inputs are in the right order" % prefix) if debug else None
-        return True
+        return -1
     elif len(l):
         print("  %s- Right side ran out of items, so inputs are not in the right order" % prefix) if debug else None
-        return False
-    else:
-        return None
-
-def my_compare(l, m):
-    return -1 if compare(l, m) else 1
+        return 1
+    return 0
 
 def ex1(pairs):
     score = 0
@@ -81,7 +77,7 @@ def ex1(pairs):
         print("== Pair %d ==" % (i + 1)) if debug else None
         print("- Compare", l, "vs", m) if debug else None
 
-        if compare(l, m):
+        if compare(l, m) < 0:
             print("Pair %d is OK") if debug else None
             score += (i + 1)
             ok_pairs.append(i + 1)
@@ -91,7 +87,7 @@ def ex1(pairs):
 
 
 def ex2(pairs):
-    pairs = sorted(pairs, key=functools.cmp_to_key(my_compare))
+    pairs = sorted(pairs, key=functools.cmp_to_key(compare))
 
     return (pairs.index([[2]]) + 1) * (pairs.index([[6]]) + 1)
 
