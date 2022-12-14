@@ -18,7 +18,6 @@ def load(file):
     lines = [ list(map(eval, l.split(" -> "))) for l in open(file_path(file), "r").read().split("\n") ]
     minx = lines[0][0][0]
     maxx = lines[0][0][0]
-    miny = lines[0][0][1]
     maxy = lines[0][0][1]
     rocks = set()
     for line in lines:
@@ -27,17 +26,13 @@ def load(file):
                 minx = point[0]
             if point[0] > maxx:
                 maxx = point[0]
-            if point[1] < miny:
-                miny = point[1]
             if point[1] > maxy:
                 maxy = point[1]
         for i, point in enumerate(line[:-1]):
             for x in myrange(point[0], line[i+1][0]):
                 for y in myrange(point[1], line[i+1][1]):
                     rocks.add((x, y))
-    # print(minx, maxx, miny, maxy)
-    # print(rocks)
-    return (rocks, minx, maxx, miny, maxy)
+    return (rocks, minx, maxx, maxy)
 
 debug = False
 def dprint(s):
@@ -47,7 +42,7 @@ def dprint(s):
 def display(data, sand, current_sand, has_floor = False):
     if not debug:
         return
-    rocks, minx, maxx, miny, maxy = data
+    rocks, minx, maxx, maxy = data
     if has_floor:
         minx = min(map(lambda p: p[0], rocks.union(sand)))
         maxx = max(map(lambda p: p[0], rocks.union(sand)))
@@ -58,14 +53,15 @@ def display(data, sand, current_sand, has_floor = False):
         print("%3d %s" % (y + 1, "".join([ "#" * (maxx - minx + 1) ])))
 
 def can_flow(sand_position, rocks, sand):
-    return ((sand_position[0], sand_position[1] + 1) not in rocks and (sand_position[0], sand_position[1] + 1) not in sand) \
-        or ((sand_position[0] - 1, sand_position[1] + 1) not in rocks and (sand_position[0] - 1, sand_position[1] + 1) not in sand) \
-        or ((sand_position[0] + 1, sand_position[1] + 1) not in rocks and (sand_position[0] + 1, sand_position[1] + 1) not in sand)
+    rocks_and_sand = rocks.union(sand)
+    return (sand_position[0],     sand_position[1] + 1) not in rocks_and_sand \
+        or (sand_position[0] - 1, sand_position[1] + 1) not in rocks_and_sand \
+        or (sand_position[0] + 1, sand_position[1] + 1) not in rocks_and_sand
 
+source = (500, 0)
 def ex1(data):
-    source = (500, 0)
     sand = set()
-    rocks, minx, maxx, miny, maxy = data
+    rocks, maxy = [data[i] for i in (0, -1)]
     # display(data, sand) 
 
     keep_producing = True
@@ -89,22 +85,17 @@ def ex1(data):
     # display(data, sand)
     return len(sand)
 
-
-
 def ex2(data):
-    source = (500, 0)
     sand = set()
-    rocks, minx, maxx, miny, maxy = data
-    dprint("\n Initial state")
+    rocks, maxy = [data[i] for i in (0, -1)]
     display(data, sand, None, True) 
 
-    dprint("\nProducing sand")
     keep_producing = True
     while keep_producing:
         # dprint("production sand particle number %d" % (len(sand) + 1))
         sand_position = source
 
-        while can_flow(sand_position, rocks, sand) and (sand_position[1] < (maxy + 2)):
+        while can_flow(sand_position, rocks, sand) and (sand_position[1] < maxy + 1):
             if ((sand_position[0], sand_position[1] + 1) not in rocks and (sand_position[0], sand_position[1] + 1) not in sand):
                 sand_position = (sand_position[0], sand_position[1] + 1)
             elif ((sand_position[0] - 1, sand_position[1] + 1) not in rocks and (sand_position[0] - 1, sand_position[1] + 1) not in sand):
@@ -113,14 +104,14 @@ def ex2(data):
                 sand_position = (sand_position[0] + 1, sand_position[1] + 1)
             # display(data, sand, sand_position, True)
         
+        # if (sand_position[1] < maxy + 1):
         sand.add(sand_position)
-        # display(data, sand, None, True)
+        display(data, sand, None, True)
 
         keep_producing = (sand_position != source)
-    display(data, sand, None, True)
+    # display(data, sand, None, True)
+        print(len(sand))
 
-
-    # print(len(sand))
     # print(sand)
 
     return len(list(filter(lambda p: p[1] < maxy + 2, sand)))
