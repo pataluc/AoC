@@ -35,17 +35,6 @@ def _deconstruct_path(tentative_parents, end):
     return list(reversed(path))
 
 def dijkstra(weighted_graph, start, end):
-    """
-    Calculate the shortest path for a directed weighted graph.
-
-    Node can be virtually any hashable datatype.
-
-    :param start: starting node
-    :param end: ending node
-    :param weighted_graph: {"node1": {"node2": "weight", ...}, ...}
-    :return: ["START", ... nodes between ..., "END"] or None, if there is no
-            path
-    """
     # We always need to visit the start
     nodes_to_visit = {start}
     visited_nodes = set()
@@ -91,7 +80,7 @@ def dijkstra(weighted_graph, start, end):
     return result
 
 # debug(graph)
-print(a)
-print(b)
+# print(a)
+# print(b)
 
 print(dijkstra(lines, a, b))
