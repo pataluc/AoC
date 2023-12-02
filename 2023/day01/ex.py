@@ -11,9 +11,9 @@ def load(file):
     return open(file_path(file), "r").read().rstrip()
 
 debug = False
-def dprint(s):
+def dprint(*s):
     if debug:
-        print(s)
+        print(*s)
 
 def ex1(data):
     result = 0
