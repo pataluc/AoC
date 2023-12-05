@@ -23,15 +23,32 @@ def convert(source: list, input_map: str):
                 source[i] = dest_start + element - src_start
     return source
 
-def convert2(source: list, input_map: str):
+def convert2(sources: list, input_map: str):
     result = []
     for transfo in input_map.split('\n')[1:]:
         dest_start, src_start, transfo_l = list(map(int, transfo.split()))
-        # for start, l in source:
-            
-            # if src_start <= element < src_start + transfo_l:
-            #     source[i] = dest_start + element - src_start
+        dest_end = dest_start + transfo_l
+        src_end = src_start + transfo_l
+
+        print(sources)
+        for range_start, range_l in sources:
+            range_end = range_start + range_l
+            if range_end < src_start or range_start > dest_start:
+                result.append([range_start, range_l])
+            elif src_start <= range_start < src_end and src_start <= range_end < src_end:
+                result.append([dest_start + range_start - src_start, range_l])
+            elif src_start <= range_start <= src_end and range_end > src_end:
+                result.append([dest_start + range_start - src_start, src_end - range_start])
+                result.append([src_end + 1, range_end - src_end])
+            elif src_start >= range_start and src_end < range_end:
+                result.append([range_start, src_start - range_start])
+                result.append([dest_start + range_start - src_start, src_end - src_start])
+                result.append([src_end + 1, range_end - src_end])
+            elif range_start <= src_start and range_end < src_end:
+                result.append([range_start, src_start - range_start])
+                result.append([src_start, range_end - src_start])
     return result
+    
 
 def ex1(data):
     groups = data.split('\n\n')
@@ -43,11 +60,11 @@ def ex1(data):
 
 def ex2(data):
     groups = data.split('\n\n')
-    source = re.findall(r'(\d+ \d+)', groups[0])
+    source = [list(map(int, group.split())) for group in re.findall(r'(\d+ \d+)', groups[0])]
 
     for transfo in groups[1:]:
-        source = convert(source, transfo)
-    return min(source)
+        source = convert2(source, transfo)
+    return min(list(map(lambda s: s[0], source)))
 
 assert convert([79, 14, 55, 13], "seed-to-soil map:\n50 98 2\n52 50 48") == [81, 14, 57, 13]
 assert ex1(load("sample.txt")) == 35
