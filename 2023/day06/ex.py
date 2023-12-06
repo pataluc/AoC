@@ -23,9 +23,16 @@ def race(t, d):
 
     return diff
 
+def race_brute(t, d):
+    ways = 0
+    for wait in range(t):
+        if wait*(t-wait) > d:
+            ways += 1
+    return ways
+
 def ex1(data):
     races = [list(map(int, line.split()[1:])) for line in data.split('\n') ]
-    results = [race(races[0][i], races[1][i]) for i in range(len(races[0]))]
+    results = [race_brute(races[0][i], races[1][i]) for i in range(len(races[0]))]
     dprint(results)
 
     return np.prod(results)
@@ -35,7 +42,7 @@ def ex2(data):
     t = int(lines[0].replace('Time:', '').replace(' ', ''))
     d = int(lines[1].replace('Distance:', '').replace(' ', ''))
 
-    return race(t, d)
+    return race_brute(t, d)
 
 assert ex1(load("sample.txt")) == 288
 print(f'ex1 : {ex1(load("input.txt"))}')
@@ -43,5 +50,3 @@ print(f'ex1 : {ex1(load("input.txt"))}')
 assert ex2(load("sample.txt")) == 71503
 print(f'ex2 : {ex2(load("input.txt"))}')
 DEBUG = True
-
-
