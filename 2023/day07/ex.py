@@ -1,64 +1,72 @@
+"""Imports"""
 from os import path
-from sys import argv
-import math
-import regex as re
-import numpy as np
+import sys
 from collections import Counter
-
+# import math
+# import regex as re
+# import numpy as np
 
 def file_path(file):
-    return f'{path.dirname(argv[0]) if path.dirname(argv[0]) else "."}/{file}'
+    """Compute input file path"""
+    return f'{path.dirname(sys.argv[0]) if path.dirname(sys.argv[0]) else "."}/{file}'
 
 def load(file):
-    return open(file_path(file), "r").read().rstrip()
+    """Load file"""
+    return open(file_path(file), "r", encoding='utf-8').read().rstrip()
 
 DEBUG = False
 def dprint(*s):
+    """Print function. Prints or not according to DEBUG"""
     if DEBUG:
         print(*s)
 
 def hand_type(hand: str):
-    c = Counter(hand)
-    hand = hand.replace('A', 'E').replace('K', 'D').replace('Q', 'C').replace('J', 'B').replace('T', 'A')
-    values = c.values()
-    if 5 in values:
-        return '50_' + hand
-    elif 4 in values:
-        return '41_' + hand
-    elif 3 in values and 2 in values:
-        return '32_' + hand
-    elif 3 in values:
-        return '31_' + hand
-    elif 2 in values and len(list(values)) == 3:
-        return '22_' + hand
-    elif 2 in values:
-        return '21_' + hand
-    else:
-        return '11_' + hand
+    """Compute hand type (5 of kind, 4 of kind, full, pairs, etc)"""
+    counter = Counter(hand)
+    values = ''.join(list(map(lambda x: str(x[1]), counter.most_common(2))))
+    if len(values) == 1:
+        return '51'
+    return values
 
-def ex1(data):
-    data = [ [line.split()[0], int(line.split()[1])] for line in data.split('\n')]
-    
-    s = sorted(data, key = lambda d: hand_type(d[0]))
+def hand_score(hand: str):
+    """Compute hand score in camel game"""
+    return hand_type(hand) + '_' \
+        + hand.replace('A', 'E').replace('K', 'D').replace('Q', 'C') \
+        .replace('J', 'B').replace('T', 'A')
+
+def hand_score2(hand: str):
+    """Compute hand score in camel game ex2"""
+    if 'J' in hand:
+        return max(hand_score(hand.replace('J', j)) for j in 'AKQT98765432')[:2] + '_' \
+            + hand.replace('A', 'E').replace('K', 'D').replace('Q', 'C') \
+            .replace('J', '0').replace('T', 'A')
+    return hand_score(hand)
+
+def ex(data, function):
+    """Compute ex answer"""
+    data = [ [line.split()[0], int(line.split()[1])] for line in data.split('\n') ]
+    sorted_data = sorted(data, key = lambda d: function(d[0]))
+
+    dprint('\n'.join(list(map(lambda h: h[0], sorted_data))))
 
     result = 0
-    for i in range(len(s)):
-        result += (i+1)*s[i][1]
+    for i, line in enumerate(sorted_data):
+        result += (i+1)*line[1]
 
     return result
 
-def ex2(data):
+assert hand_score('2AAAA') < hand_score('33332')
+assert hand_score('31T3K') < hand_score('32T3K')
+assert hand_score('77788') < hand_score('77888')
+assert ex(load("sample.txt"), hand_score) == 6440
+print(f'ex1 : {ex(load("input.txt"), hand_score)}')
 
-    return 0
+dprint(sorted([hand_score("QJJQ2".replace('J', j)) for j in 'AKQT98765432']))
+assert max(sorted([hand_score("QJJQ2".replace('J', j)) for j in 'AKQT98765432'])) == "41_CCCC2"
+dprint(hand_score2('T55J5'), hand_score2('QQQJA'), hand_score2('KTJJT'))
+assert hand_score2('T55J5') < hand_score2('QQQJA') < hand_score2('KTJJT')
+assert ex(load("sample.txt"), hand_score2) == 5905
 
-
-assert hand_type('2AAAA') < hand_type('33332')
-assert hand_type('31T3K') < hand_type('32T3K')
-assert hand_type('77788') < hand_type('77888')
-assert ex1(load("sample.txt")) == 6440
+print(f'ex2 : {ex(load("input.txt"), hand_score2)}')
 DEBUG = True
-print(f'ex1 : {ex1(load("input.txt"))}')
-exit()
-
-assert ex2(load("sample.txt")) == 71503
-print(f'ex2 : {ex2(load("input.txt"))}')
+sys.exit()
