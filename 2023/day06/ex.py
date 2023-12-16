@@ -42,7 +42,7 @@ def ex2(data):
     t = int(lines[0].replace('Time:', '').replace(' ', ''))
     d = int(lines[1].replace('Distance:', '').replace(' ', ''))
 
-    return race_brute(t, d)
+    return race(t, d)
 
 assert ex1(load("sample.txt")) == 288
 print(f'ex1 : {ex1(load("input.txt"))}')
