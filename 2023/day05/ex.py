@@ -1,7 +1,7 @@
 from os import path
 from sys import argv
 
-import regex as re
+import re
 
 def file_path(file):
     return f'{path.dirname(argv[0]) if path.dirname(argv[0]) else "."}/{file}'
@@ -145,13 +145,26 @@ def transform(sources, transfo, depth = 0):
 
 def ex2(data):
     groups = data.split('\n\n')
-    sources = [list(map(int, group.split())) for group in re.findall(r'(\d+ \d+)', groups[0])]
-    transfo_groups = [[list(map(int, transfo.split())) for transfo in transfo_group.split('\n')[1:]] for transfo_group in groups[1:]]
-    if DEBUG: print(sources)
-    if DEBUG: print(transfo_groups)
+    source = [list(map(int, group.split())) for group in re.findall(r'(\d+ \d+)', groups[0])]
+    transfo_groups = [ [list(map(int, transfo.split())) for transfo in transfo_group.split('\n')[1:]] for transfo_group in groups[1:][::-1]]
+    print(transfo_groups)
+    i = 46
+    while True:
+        nb = i
+        dprint("lancement")
+        for transfo_group in transfo_groups:
+            dprint("#" *80 + "\n\nconversion ", transfo_group[0])
+            for dest_start, src_start, transfo_l in transfo_group:
+                delta = src_start - dest_start
+                if dest_start <= nb <= dest_start + transfo_l - 1:
+                    nb += delta
+                    break
 
-    return transform(sources, transfo_groups)
-
+        if any([m <= nb <= m + n - 1 for m, n in source]):
+            return i
+        i += 1
+        if i % 10000 == 0:
+            print(i)
 
 
 
@@ -159,8 +172,11 @@ assert convert([79, 14, 55, 13], "seed-to-soil map:\n50 98 2\n52 50 48") == [81,
 assert ex1(load("sample.txt")) == 35
 print(f'ex1 : {ex1(load("input.txt"))}')
 
-DEBUG = True
+assert ex2_reverse(load("sample.txt")) == 46
+print(f'ex2 : {ex2_reverse(load("input.txt"))}')
+exit()
+
 assert ex2(load("sample.txt")) == 46
 print(f'ex2 : {ex2(load("input.txt"))}')
-# assert ex2_reverse(load("sample.txt")) == 46
-# print(f'ex2 : {ex2_reverse(load("input.txt"))}')
+DEBUG = True
+
