@@ -2,8 +2,8 @@
 from os import path
 import sys
 # from collections import Counter
-import math
-import regex as re
+# import math
+# import regex as re
 # import numpy as np
 
 def file_path(file):
@@ -17,18 +17,20 @@ def load(file):
 DEBUG = False
 
 def g_to_str(grid: list):
+    """Printing grid"""
     return '\n'.join([''.join(line) for line in grid]) + "\n"
 
 def pretty_print(grid):
+    """Pretty printing grid"""
     for line in grid:
-        e: set
-        for e in line:
-            if len(e) == 0:
+        element: set
+        for element in line:
+            if len(element) == 0:
                 print('.', end='')
-            elif len(e) == 1:
-                print(list(e)[0], end='')
+            elif len(element) == 1:
+                print(list(element)[0], end='')
             else:
-                print(len(e), end='')
+                print(len(element), end='')
         print('')
 
 DIR_CAR = {
@@ -38,102 +40,117 @@ DIR_CAR = {
     (0, -1): '<'
 }
 
-def energizing(G, W, H, visited, pos: tuple, dir: tuple):
-    if 0 <= pos[0] < H \
-        and 0 <= pos[1] < W:
-        visited[pos[0]][pos[1]].add(DIR_CAR[dir])
-    
+def energizing(GRID, visited, pos: tuple, dir_: tuple):
+    """Energy propagation"""
+    ROWS = len(GRID)
+    COLS = len(GRID[0])
+
+    if 0 <= pos[0] < ROWS \
+        and 0 <= pos[1] < COLS:
+        visited[pos[0]][pos[1]].add(DIR_CAR[dir_])
+
     # if DEBUG: pretty_print(visited)
-    i = 1
+    steps = 1
 
-    nextpos = (pos[0] + i * dir[0], pos[1] + i * dir[1])
-    if DEBUG: print("pos:", nextpos, "dir:", dir, "char: ", DIR_CAR[dir], '  grid:', G[nextpos[0]][nextpos[1]])
-    if DEBUG: pretty_print(visited)
+    nextpos = (pos[0] + steps * dir_[0], pos[1] + steps * dir_[1])
+    if DEBUG:
+        print("pos:", nextpos, "dir:", dir_, "char: ",\
+              DIR_CAR[dir_], '  grid:', GRID[nextpos[0]][nextpos[1]])
+    if DEBUG:
+        pretty_print(visited)
 
-    while 0 <= nextpos[0] < H \
-        and 0 <= nextpos[1] < W \
-        and (G[nextpos[0]][nextpos[1]] == '.' \
-             or (G[nextpos[0]][nextpos[1]] == '-' \
-             and dir[0] == 0) \
-             or (G[nextpos[0]][nextpos[1]] == '|' \
-             and dir[1] == 0)):
-        
-        visited[nextpos[0]][nextpos[1]].add(DIR_CAR[dir])
+    while 0 <= nextpos[0] < ROWS \
+        and 0 <= nextpos[1] < COLS \
+        and (GRID[nextpos[0]][nextpos[1]] == '.' \
+             or (GRID[nextpos[0]][nextpos[1]] == '-' \
+             and dir_[0] == 0) \
+             or (GRID[nextpos[0]][nextpos[1]] == '|' \
+             and dir_[1] == 0)):
+
+        visited[nextpos[0]][nextpos[1]].add(DIR_CAR[dir_])
 
         # if DEBUG: print(nextpos)
-        i += 1
-        nextpos = (pos[0] + i * dir[0], pos[1] + i * dir[1])
+        steps += 1
+        nextpos = (pos[0] + steps * dir_[0], pos[1] + steps * dir_[1])
     # if DEBUG: print(visited)
-    
-    if 0 <= nextpos[0] < H \
-        and 0 <= nextpos[1] < W:
+
+    if 0 <= nextpos[0] < ROWS \
+        and 0 <= nextpos[1] < COLS:
         # if DEBUG: print(G[nextpos[0]][nextpos[1]])
-        if G[nextpos[0]][nextpos[1]] == '-':
-            if DEBUG: print('splitting <->')
+        if GRID[nextpos[0]][nextpos[1]] == '-':
+            if DEBUG:
+                print('splitting <->')
             if '>' not in visited[nextpos[0]][nextpos[1]]:
-                energizing(G, W, H, visited, nextpos, (0, 1))
+                energizing(GRID, visited, nextpos, (0, 1))
             if '<' not in visited[nextpos[0]][nextpos[1]]:
-                energizing(G, W, H, visited, nextpos, (0, -1))
-        elif G[nextpos[0]][nextpos[1]] == '|':
-            if DEBUG: print('splitting ^-v')
+                energizing(GRID, visited, nextpos, (0, -1))
+        elif GRID[nextpos[0]][nextpos[1]] == '|':
+            if DEBUG:
+                print('splitting ^-v')
             if 'v' not in visited[nextpos[0]][nextpos[1]]:
-                energizing(G, W, H, visited, nextpos, (1, 0))
+                energizing(GRID, visited, nextpos, (1, 0))
             if '^' not in visited[nextpos[0]][nextpos[1]]:
-                energizing(G, W, H, visited, nextpos, (-1, 0))
-        elif G[nextpos[0]][nextpos[1]] == '\\':
-            newdir = (dir[1], dir[0])
-            if DEBUG: print(f'Going from {DIR_CAR[dir]} to {DIR_CAR[newdir]}')
+                energizing(GRID, visited, nextpos, (-1, 0))
+        elif GRID[nextpos[0]][nextpos[1]] == '\\':
+            newdir = (dir_[1], dir_[0])
+            if DEBUG:
+                print(f'Going from {DIR_CAR[dir_]} to {DIR_CAR[newdir]}')
             if DIR_CAR[newdir] not in visited[nextpos[0]][nextpos[1]]:
-                energizing(G, W, H, visited, nextpos, newdir)
-        elif G[nextpos[0]][nextpos[1]] == '/':
-            newdir = (-1 * dir[1], -1 * dir[0])
-            if DEBUG: print(f'Going from {DIR_CAR[dir]} to {DIR_CAR[newdir]}')
+                energizing(GRID, visited, nextpos, newdir)
+        elif GRID[nextpos[0]][nextpos[1]] == '/':
+            newdir = (-1 * dir_[1], -1 * dir_[0])
+            if DEBUG:
+                print(f'Going from {DIR_CAR[dir_]} to {DIR_CAR[newdir]}')
             if DIR_CAR[newdir] not in visited[nextpos[0]][nextpos[1]]:
-                energizing(G, W, H, visited, nextpos, newdir)
+                energizing(GRID, visited, nextpos, newdir)
 
 
-def ex1(data, init_pos = (0, -1), dir = (0, 1)):
+def ex1(data, init_pos = (0, -1), dir_ = (0, 1)):
     """Compute ex answer"""
-    G = [[c for c in row] for row in data.split('\n')]
-    W = len(G[0])
-    H = len(G)
+    GRID = [list(row) for row in data.split('\n')]
+    ROWS = len(GRID)
+    COLS = len(GRID[0])
 
     # if DEBUG: print(g_to_str(G))
 
-    visited = [[set() for _ in range(W)] for _ in range(H)]
-    energizing(G, W, H, visited, init_pos, dir)
+    visited = [[set() for _ in range(COLS)] for _ in range(ROWS)]
+    energizing(GRID, visited, init_pos, dir_)
 
-    if DEBUG: pretty_print(visited)
-                
+    if DEBUG:
+        pretty_print(visited)
+
     result = 0
-    for i, line in enumerate(visited):
-        for j, e in enumerate(line):
-            if len(e) > 0:
+    for step_i, line in enumerate(visited):
+        for step_j, node in enumerate(line):
+            if len(node) > 0:
                 result += 1
-                if DEBUG: print((i,j))
+                if DEBUG:
+                    print((step_i,step_j))
 
-    if DEBUG: print(result)
+    if DEBUG:
+        print(result)
 
     return result
 
 def ex2(data):
     """Compute ex answer"""
-    G = [[c for c in row] for row in data.split('\n')]
-    W = len(G[0])
-    H = len(G)
+    GRID = [list(row) for row in data.split('\n')]
+    ROWS = len(GRID)
+    COLS = len(GRID[0])
 
     result = 0
     # start horiz
-    for i in range(H):
-        result = max(result, ex1(data, (i, -1), (0, 1)))
-        result = max(result, ex1(data, (i, W), (0, -1)))
-        
+    for row in range(ROWS):
+        result = max(result, ex1(data, (row, -1), (0, 1)))
+        result = max(result, ex1(data, (row, ROWS), (0, -1)))
+
     # start vert
-    for j in range(W):
-        result = max(result, ex1(data, (-1, j), (1, 0)))
-        result = max(result, ex1(data, (H, j), (-1, 0)))
-    
-    if DEBUG: print(result)
+    for col in range(COLS):
+        result = max(result, ex1(data, (-1, col), (1, 0)))
+        result = max(result, ex1(data, (COLS, col), (-1, 0)))
+
+    if DEBUG:
+        print(result)
     return result
 
 
@@ -142,6 +159,6 @@ print(f'ex1 : {ex1(load("input.txt"))}')
 
 assert ex2(load("sample.txt")) == 51
 print(f'ex2 : {ex2((load("input.txt")))}')
+
 DEBUG = True
 sys.exit()
-

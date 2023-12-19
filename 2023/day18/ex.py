@@ -1,12 +1,12 @@
 """Imports"""
 from os import path
 import sys
-from collections import deque
-import math
+# from collections import deque
+# import math
 import regex as re
 from colorama import Fore
 # import numpy as np
-from heapq import *
+# from heapq import *
 from shapely.geometry import Polygon
 
 def file_path(file):
@@ -20,19 +20,22 @@ def load(file):
 DEBUG = False
 
 def g_to_str(grid: list):
+    """Printing grid"""
     return '\n'.join([''.join(line) for line in grid]) + "\n"
 
-def pretty_print(grid, path):
+def pretty_print(grid, path_):
+    """Pretty printing grid"""
     print('#' * len(grid[0]))
-    for r, line in enumerate(grid):
-        for c, char in enumerate(line):
-            if (r, c) in path:
+    for row, line in enumerate(grid):
+        for col, char in enumerate(line):
+            if (row, col) in path_:
                 print(Fore.RED + char, end='')
             else:
                 print(Fore.WHITE + char, end='')
         print(Fore.WHITE + '')
 
 def get_area(moves):
+    """Get polygon area"""
     points = [(0, 0)]
     perimeter = 0
     for move in moves:
@@ -61,7 +64,7 @@ def ex2(data):
     """Compute ex answer"""
     edges = [re.match(r'.*\(#(.*)(\d)\)', line).groups() for line in data.split('\n')]
     dirs = ['R', 'D', 'L', 'U']
-    
+
     return get_area([(dirs[int(edge[1])], int(edge[0], 16)) for edge in edges])
 
 assert ex1(load("sample.txt")) == 62

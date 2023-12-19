@@ -1,13 +1,13 @@
 """Imports"""
 from os import path
+from copy import deepcopy
 import sys
-from collections import deque
-import math
+# from collections import deque
+# import math
 import regex as re
 from colorama import Fore
 import numpy as np
-from heapq import *
-from copy import deepcopy
+# from heapq import *
 
 def file_path(file):
     """Compute input file path"""
@@ -20,19 +20,22 @@ def load(file):
 DEBUG = False
 
 def g_to_str(grid: list):
+    """Printing grid"""
     return '\n'.join([''.join(line) for line in grid]) + "\n"
 
-def pretty_print(grid, path):
+def pretty_print(grid, path_):
+    """Pretty printing grid"""
     print('#' * len(grid[0]))
-    for r, line in enumerate(grid):
-        for c, char in enumerate(line):
-            if (r, c) in path:
+    for row, line in enumerate(grid):
+        for col, char in enumerate(line):
+            if (row, col) in path_:
                 print(Fore.RED + char, end='')
             else:
                 print(Fore.WHITE + char, end='')
         print(Fore.WHITE + '')
 
 def process_part(workflows: list, part: dict, workflow='in'):
+    """Process a part"""
     if workflow == 'A':
         return sum(part.values())
     if workflow == 'R':
@@ -44,69 +47,81 @@ def process_part(workflows: list, part: dict, workflow='in'):
     for rule in rules:
         if ':' not in rule:
             return process_part(workflows, part, rule)
-        r, n = rule.split(':')
-        if eval(r):
-            return process_part(workflows, part, n)
-
-
+        condition, new_workflow = rule.split(':')
+        if eval(condition):
+            return process_part(workflows, part, new_workflow)
+    return 0
 
 def ex1(data):
     """Compute ex answer"""
     workflows, parts = data.split('\n\n')
 
-    workflows = [re.match(r'(?P<name>\w+){(?P<rules>.*)}', line).groupdict() for line in workflows.split('\n')]
+    workflows = [re.match(r'(?P<name>\w+){(?P<rules>.*)}', line).groupdict() \
+                  for line in workflows.split('\n')]
     workflows = {w['name']: w['rules'].split(',') for w in workflows}
-    if DEBUG: print(workflows)
+    if DEBUG:
+        print(workflows)
 
-    parts = [re.match(r'{x=(?P<x>\d+),m=(?P<m>\d+),a=(?P<a>\d+),s=(?P<s>\d+)}', line).groupdict() for line in parts.split('\n')]
+    parts = [re.match(r'{x=(?P<x>\d+),m=(?P<m>\d+),a=(?P<a>\d+),s=(?P<s>\d+)}', line).groupdict() \
+             for line in parts.split('\n')]
     parts = [{k: int(v) for k, v in part.items()} for part in parts]
-    if DEBUG: print(parts)
+    if DEBUG:
+        print(parts)
 
     return sum(process_part(workflows, part) for part in parts)
 
-def process2(workflows: list, path: list, indent=0, result = 0):
-    last_w, limits = path[-1]
+def process_workflows(workflows: list, path_: list, indent=0, result = 0):
+    """Process workflows"""
+    last_w, limits = path_[-1]
 
     if last_w == 'A':
-        if DEBUG: print('  ' * indent, Fore.GREEN, "Accepted:", # limits, 
-              "nb:", np.prod([1 + limit[1] - limit[0] for limit in limits.values()]), Fore.LIGHTMAGENTA_EX,
-              "result: ", result + np.prod([1 + limit[1] - limit[0] for limit in limits.values()]), Fore.WHITE)
-        return result + np.prod([1 + limit[1] - limit[0] for limit in limits.values()])
+        product = np.prod([1 + limit[1] - limit[0] for limit in limits.values()])
+        if DEBUG:
+            print('  ' * indent, Fore.GREEN, "Accepted:",
+              "nb:", product, Fore.LIGHTMAGENTA_EX, "result: ", result + product, Fore.WHITE)
+        return result + product
     if last_w == 'R':
         return result
 
     rules = workflows[last_w]
-    if DEBUG: print('  ' * indent,'Workflow', Fore.BLUE, last_w, Fore.WHITE, limits)
+    if DEBUG:
+        print('  ' * indent,'Workflow', Fore.BLUE, last_w, Fore.WHITE, limits)
 
     for rule in rules:
-        if DEBUG: print('  ' * indent, 'Evaluating', rule)
+        if DEBUG:
+            print('  ' * indent, 'Evaluating', rule)
         if ':' not in rule:
-            if DEBUG: print('  ' * indent, 'Going straight to', rule)
-            return process2(workflows, path + [(rule, deepcopy(limits))], indent+1, result)
+            if DEBUG:
+                print('  ' * indent, 'Going straight to', rule)
+            return process_workflows(workflows, path + [(rule, deepcopy(limits))],
+                                     indent+1, result)
 
-        r, n = rule.split(':')
-        if r[1] == '<':
-            v = int(r[2:])
-            tmp = limits[r[0]][1]
-            limits[r[0]][1] = v - 1
+        rrule, next_workflow = rule.split(':')
+        if rrule[1] == '<':
+            value = int(rrule[2:])
+            tmp = limits[rrule[0]][1]
+            limits[rrule[0]][1] = value - 1
 
-            if limits[r[0]][0] < limits[r[0]][1]:
-                result = process2(workflows, path + [(n, deepcopy(limits))], indent+1, result)
+            if limits[rrule[0]][0] < limits[rrule[0]][1]:
+                result = process_workflows(workflows, path + [(next_workflow, deepcopy(limits))],
+                                           indent+1, result)
             else:
                 break
-            limits[r[0]][1] = tmp
-            limits[r[0]][0] = v
-        if r[1] == '>':
-            v = int(r[2:])
-            tmp = limits[r[0]][0]
-            limits[r[0]][0] = v + 1
-            if  limits[r[0]][0] < limits[r[0]][1]:
-                result = process2(workflows, path + [(n, deepcopy(limits))], indent+1, result)
+            limits[rrule[0]][1] = tmp
+            limits[rrule[0]][0] = value
+        if rrule[1] == '>':
+            value = int(rrule[2:])
+            tmp = limits[rrule[0]][0]
+            limits[rrule[0]][0] = value + 1
+            if  limits[rrule[0]][0] < limits[rrule[0]][1]:
+                result = process_workflows(workflows, path + [(next_workflow, deepcopy(limits))],
+                                           indent+1, result)
             else:
                 break
-            limits[r[0]][0] = tmp
-            limits[r[0]][1] = v
-    if DEBUG: print("sortie")
+            limits[rrule[0]][0] = tmp
+            limits[rrule[0]][1] = value
+    if DEBUG:
+        print("sortie")
     return result
 
 
@@ -115,12 +130,13 @@ def ex2(data):
     """Compute ex answer"""
     workflows = data.split('\n\n')[0]
 
-    workflows = [re.match(r'(?P<name>\w+){(?P<rules>.*)}', line).groupdict() for line in workflows.split('\n')]
+    workflows = [re.match(r'(?P<name>\w+){(?P<rules>.*)}', line).groupdict()
+                 for line in workflows.split('\n')]
     workflows = {w['name']: w['rules'].split(',') for w in workflows}
 
-    path = [('in', {'x': [1,4000], 'm': [1,4000], 'a': [1,4000], 's': [1,4000]})]
+    path_ = [('in', {'x': [1,4000], 'm': [1,4000], 'a': [1,4000], 's': [1,4000]})]
 
-    return process2(workflows, path)
+    return process_workflows(workflows, path_)
 
 assert ex1(load("sample.txt")) == 19114
 print(f'ex1 : {ex1(load("input.txt"))}')
