@@ -93,7 +93,7 @@ def process_workflows(workflows: list, path_: list, indent=0, result = 0):
         if ':' not in rule:
             if DEBUG:
                 print('  ' * indent, 'Going straight to', rule)
-            return process_workflows(workflows, path + [(rule, deepcopy(limits))],
+            return process_workflows(workflows, path_ + [(rule, deepcopy(limits))],
                                      indent+1, result)
 
         rrule, next_workflow = rule.split(':')
@@ -103,7 +103,7 @@ def process_workflows(workflows: list, path_: list, indent=0, result = 0):
             limits[rrule[0]][1] = value - 1
 
             if limits[rrule[0]][0] < limits[rrule[0]][1]:
-                result = process_workflows(workflows, path + [(next_workflow, deepcopy(limits))],
+                result = process_workflows(workflows, path_ + [(next_workflow, deepcopy(limits))],
                                            indent+1, result)
             else:
                 break
@@ -114,7 +114,7 @@ def process_workflows(workflows: list, path_: list, indent=0, result = 0):
             tmp = limits[rrule[0]][0]
             limits[rrule[0]][0] = value + 1
             if  limits[rrule[0]][0] < limits[rrule[0]][1]:
-                result = process_workflows(workflows, path + [(next_workflow, deepcopy(limits))],
+                result = process_workflows(workflows, path_ + [(next_workflow, deepcopy(limits))],
                                            indent+1, result)
             else:
                 break
