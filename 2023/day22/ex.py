@@ -53,9 +53,9 @@ class Brick:
         """Set brick"s points"""
         self.point_a, self.point_b = points
 
-    def get_lower_point(self) -> int:
+    def get_lower_z(self) -> int:
         """Get brick's lower z"""
-        return self.point_a[0]
+        return self.point_a[2]
 
     def supports(self, b: Brick) -> None:
         """Adds support dependency"""
@@ -94,7 +94,7 @@ def bricks_from_data(data: str) -> list[Brick]:
         for i in range(3):
             assert brick_p1[i] <= brick_p2[i]
 
-    brick_set.sort(key=lambda b: b.get_lower_point())
+    brick_set.sort(key=lambda b: b.get_lower_z())
 
     return brick_set
 
@@ -115,7 +115,7 @@ def fall_brick(fallen_bricks: list[Brick], to_fall: Brick) -> (((int, int, int),
                 break
 
     to_fall.set_points(((x1, y1, z1 + 1), (x2, y2, z2 + 1)))
-    return to_fall, not z1 == z_orig
+    return to_fall, not z1 + 1 == z_orig
 
 def fall_bricks(brick_set: list[Brick]) -> (list[Brick], int):
     to_fall = deque(brick_set)
@@ -146,12 +146,10 @@ def fall_bricks(brick_set: list[Brick]) -> (list[Brick], int):
 def ex1(data: str) -> int:
     """Compute ex answer"""
 
-    bricks_obj : list[Brick] = fall_bricks(bricks_from_data(data))[0]
-    # for b in bricks_obj:
-    #     print(b.name, b.get_points())
-
+    bricks : list[Brick] = bricks_from_data(data)
+    bricks = fall_bricks(bricks)[0]
     result = 0
-    for b in bricks_obj:
+    for b in bricks:
         if DEBUG: print(f'Brick {b.name}', 'supports', b.supporting_to_str(), 'and is supported by', b.supported_by_to_str())
         if len(b.supporting) == 0 or all([len(c.supported_by) > 1 for c in b.supporting]):
             result += 1
@@ -162,12 +160,14 @@ def ex1(data: str) -> int:
 def ex2(data: str) -> int:
     """Compute ex answer"""
 
-    bricks_obj : list[Brick] = fall_bricks(bricks_from_data(data))[0]
+    bricks : list[Brick] = fall_bricks(bricks_from_data(data))[0]
 
     result = 0
-    for b in bricks_obj:
-        if DEBUG: print(f'Brick {b.name} supports {b.supporting_to_str()}, and is supported by {b.supported_by_to_str()}.')
-        bricks_obj, moved = fall_bricks(bricks_obj)
+    L = len(bricks)
+    for i in range(L):
+        _, moved = fall_bricks(bricks[:i] + bricks[i+1:])
+        print(f'{i}/{L}')
+        if DEBUG: print(f'  Disintegrating brick {bricks[i].name} would move {moved} other bricks.')
         result += moved
 
     return result
