@@ -37,13 +37,13 @@ def pretty_print(grid, points):
 
 class Brick:
     """Brick object"""
-    def __init__(self, id: int, points: ((int, int, int), (int, int, int))):
+
+    def __init__(self, name: str, points: ((int, int, int), (int, int, int))):
         """Constructor"""
-        self.name = chr(ord('A') + id)
+        self.name = name
         self.point_a, self.point_b = points
         self.supported_by = set()
         self.supporting = set()
-        # self.descendants = set()
 
     def get_points(self) -> ((int, int, int), (int, int, int)):
         """Get brick"s points"""
@@ -56,6 +56,10 @@ class Brick:
     def get_lower_z(self) -> int:
         """Get brick's lower z"""
         return self.point_a[2]
+    
+    def duplicate(self) -> Brick:
+        """Duplicate brick"""
+        return Brick(self.name, self.get_points())
 
     def supports(self, b: Brick) -> None:
         """Adds support dependency"""
@@ -90,7 +94,7 @@ def bricks_from_data(data: str) -> list[Brick]:
     for i, (brick_p1, brick_p2) in enumerate(bricks):
         brick_p1 = tuple(map(int, brick_p1.split(',')))
         brick_p2 = tuple(map(int, brick_p2.split(',')))
-        brick_set.append(Brick(i, (brick_p1, brick_p2)))
+        brick_set.append(Brick(chr(ord('A') + i), (brick_p1, brick_p2)))
         for i in range(3):
             assert brick_p1[i] <= brick_p2[i]
 
@@ -165,37 +169,12 @@ def ex2(data: str) -> int:
     result = 0
     L = len(bricks)
     for i in range(L):
-        _, moved = fall_bricks(bricks[:i] + bricks[i+1:])
-        print(f'{i}/{L}')
+        _, moved = fall_bricks([b.duplicate() for b in bricks[:i] + bricks[i+1:]])
+        # if i % 50 == 0: print(f'{i}/{L}')
         if DEBUG: print(f'  Disintegrating brick {bricks[i].name} would move {moved} other bricks.')
         result += moved
 
     return result
-
-    # no_childrens_bricks = [b for b in bricks_obj if len(b.supporting) == 0]
-
-    # to_visit = deque(no_childrens_bricks)
-
-    # while to_visit:
-    #     b = to_visit.pop()
-    #     for d in b.supporting:
-    #         b.descendants = b.descendants.union(b.supporting, d.descendants)
-    #     print(f'{b.name} has {b.descendants_to_str()} descendants and {b.supported_by_to_str()} parents')
-
-    #     for parent in b.supported_by:
-    #         to_visit.append(parent)
-    # no_parents = [b for b in bricks_obj if len(b.supported_by) == 0]
-
-    # to_visit = deque(no_parents)
-
-    # while to_visit:
-    #     b = to_visit.pop()
-    #     for d in b.supporting:
-    #         b.descendants = b.descendants.union(b.supporting, d.descendants)
-    #     print(f'{b.name} has {b.descendants_to_str()} descendants and {b.supported_by_to_str()} parents')
-
-    #     for parent in b.supported_by:
-    #         to_visit.append(parent)
 
 
 assert ex1(load("sample.txt")) == 5
