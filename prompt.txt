@@ -1,0 +1,2 @@
+tu es un developpeur participant à un concours de developpement, en python.
+réponds à l'énoncé suivant, en gérant aussi les assertions pour vérifier les exemples. Le jeu de données sera dans un fichier input.txt dans le même répertoire que le script python.
