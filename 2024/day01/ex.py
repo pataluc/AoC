@@ -1,15 +1,15 @@
 """Imports"""
 from __future__ import annotations
 from os import path
-from copy import deepcopy
+# from copy import deepcopy
 import sys
-from collections import deque
+# from collections import deque
 # import math
 # import regex as re
-from colorama import Fore
-import numpy as np
+# from colorama import Fore
+# import numpy as np
 # from heapq import *
-import networkx as nx
+# import networkx as nx
 
 def file_path(file):
     """Compute input file path"""
@@ -22,18 +22,19 @@ def load(file):
 DEBUG = False
 
 def data_load(data: str) -> tuple:
+    """Loading as tuple of list"""
     return tuple(list(zip(*[list(map(int, line.split('   '))) for line in data.split('\n')])))
 
 def ex1(data: str) -> int:
     """Compute ex answer"""
     left, right = map(sorted, data_load(data))
-    
+
     return sum(map(lambda t: abs(t[0]-t[1]), zip(left, right)))
 
 def ex2(data: str) -> int:
     """Compute ex answer"""
     left, right = data_load(data)
-    
+
     result = 0
     for l in left:
         result += l * right.count(l)

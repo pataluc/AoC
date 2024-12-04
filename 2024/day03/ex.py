@@ -6,7 +6,7 @@ import sys
 # from collections import deque
 # import math
 import re
-from colorama import Fore
+# from colorama import Fore
 # import numpy as np
 # from heapq import *
 # import networkx as nx
@@ -25,26 +25,7 @@ def ex1(data: str) -> int:
     """Compute ex answer"""
     valid_instructions = re.findall(r'mul\(([0-9]+),([0-9]+)\)', data)
 
-    return sum([int(x)*int(y) for (x, y) in valid_instructions])
-
-def ex2(data: str) -> int:
-    """Compute ex answer"""
-    # print(data)
-    # data = re.sub(r'don\'t\(\).*?do\(\)', '', data)
-    # print(data)
-
-    valid_instructions = re.findall(r'(mul\(([0-9]+),([0-9]+)\)|do\(\)|don\'t\(\))', data)
-    result = 0
-    do = True
-    for instruction in valid_instructions:
-        if instruction[0] == 'do()':
-            do = True
-        elif instruction[0] == 'don\'t()':
-            do = False
-        elif do:
-            result += int(instruction[1])*int(instruction[2])
-
-    return result
+    return sum(int(x)*int(y) for (x, y) in valid_instructions)
 
 
 assert ex1(load("sample.txt")) == 161
@@ -52,9 +33,8 @@ print(f'ex1 : {ex1(load("input.txt"))}')
 
 
 # DEBUG = True
-assert ex2(load("sample2.txt")) == 48
-print(f'ex2 : {ex2(load("input.txt"))}')
+assert ex1(re.sub(r'don\'t\(\).*?(do\(\)|$)', '', load("sample2.txt"), flags=re.DOTALL)) == 48
+print(f'ex2 : {ex1(re.sub(r'don\'t\(\).*?(do\(\)|$)', '', load("input.txt"), flags=re.DOTALL))}')
 
 
 sys.exit()
-
