@@ -31,7 +31,17 @@ def g_to_str(grid: list):
     """Printing grid"""
     return '\n'.join([''.join(line) for line in grid]) + "\n"
 
-def solve(grid: list, H: int, W: int, h: int, w: int) -> int:
+def print_grid(grid, visited):
+    print('')
+    for h in range(len(grid)):
+        for w in range(len(grid[0])):
+            if (h, w) in visited:
+                print('X', end='')
+            else:
+                print(grid[h][w], end='')
+        print('')
+
+def solve(grid: list, H: int, W: int, h: int, w: int) -> tuple:
     """Compute ex answer"""
 
     dir_index = 0
@@ -40,24 +50,24 @@ def solve(grid: list, H: int, W: int, h: int, w: int) -> int:
     visited = set()
     visited_with_dir = set()
 
-    while True:
+    while 0 <= h < H and 0 <= w < W:
         dir = dir_rotations[dir_index % 4]
-        # print(dir, h, w)
-        if (h + dir[0] >= H) or (h + dir[0] < 0) or (w + dir[1] >= W) or (w + dir[1] < 0):
-            # print(1+len(visited))
-            return 1+len(visited)
-        if grid[h+dir[0]][w + dir[1]] != '#':
-            visited.add((h,w))
-            h += dir[0]
-            w += dir[1]
-        else:
-            dir_index += 1
-        # if DEBUG: print((h, w, dir_index), visited_with_dir)
+        visited.add((h, w))
+        # print_grid(grid, visited)
         if (h, w, dir_index % 4) in visited_with_dir:
+            # print("boucle trouvée ")
             return None
         else:
             visited_with_dir.add((h, w, dir_index % 4))
-        # if DEBUG: print(g_to_str(grid))
+
+        if 0 <= h + dir[0] < H and 0 <= w + dir[1] < W:
+            if grid[h + dir[0]][w + dir[1]] != '#':
+                h += dir[0]
+                w += dir[1]
+            else:
+                dir_index += 1
+        else:
+            return len(visited), visited
 
 
 def ex1(data: str) -> int:
@@ -67,7 +77,9 @@ def ex1(data: str) -> int:
     w = data.index('^') % (W + 1)
     grid[h][w] = '.'
 
-    return solve(grid, H, W, h, w)
+    result, _ = solve(grid, H, W, h, w)
+
+    return result
 
 def ex2(data: str) -> int:
     """Compute ex answer"""
@@ -76,17 +88,18 @@ def ex2(data: str) -> int:
     w = data.index('^') % (W + 1)
     grid[h][w] = '.'
 
-    result = 0
-    for ho in range(H):
-        for wo in range(W):
-            # print("Trying to obstacle in ", ho, wo)
-            grid, H, W = load_data(data)
-            grid[h][w] = '.'
+    _, visited = solve(grid, H, W, h, w)
 
-            if (ho, wo) != (h, w) and grid[ho][wo] != '#':
-                grid[ho][wo] = '#'
-                if not solve(grid, H, W, h, w):
-                    result += 1
+    result = 0
+    for (ho, wo) in visited:
+        if DEBUG: print("Trying to obstacle in ", ho, wo)
+        grid, H, W = load_data(data)
+        grid[h][w] = '.'
+
+        if (ho, wo) != (h, w) and grid[ho][wo] != '#':
+            grid[ho][wo] = '#'
+            if not solve(grid, H, W, h, w):
+                result += 1
     
     return result
 
@@ -95,7 +108,7 @@ assert ex1(load("sample.txt")) == 41
 print(f'ex1 : {ex1(load("input.txt"))}')
 
 
-DEBUG = True
+# DEBUG = True
 assert ex2(load("sample.txt")) == 6
 print(f'ex2 : {ex2(load("input.txt"))}')
 
