@@ -3,7 +3,7 @@ from __future__ import annotations
 from os import path
 # from copy import deepcopy
 import sys
-# from collections import deque
+from collections import defaultdict
 # import math
 # import re
 # from colorama import Fore
@@ -23,7 +23,7 @@ def load(file):
 def load_data(data: str) -> dict:
     """Loads data as a tuple"""
 
-    result = dict()
+    result = defaultdict(list)
     grid = [line for line in data.split('\n')]
     H = len(grid)
     W = len(grid[0])
@@ -32,10 +32,7 @@ def load_data(data: str) -> dict:
         for w in range(W):
             c = grid[h][w]
             if c != '.':
-                if c in result:
-                    result[c].append((h, w))
-                else:
-                    result[c] = [(h, w)]
+                result[c].append((h, w))
 
     return result, H, W
 
@@ -46,6 +43,8 @@ def print_grid(H, W, antennas, antinodes):
         for w in range(W):
             if (h, w) in antinodes:
                 print('#', end='')
+            elif any([(h, w) in antenna_letter for antenna_letter in antennas.values()]):
+                print('@', end='')
             else:
                 print('.', end='')
         print('')
@@ -58,10 +57,15 @@ def ex1(data: str) -> int:
     antinodes = set()
 
     for positions in antennas.values():
-        for h1, w1 in positions:
-            for h2, w2 in positions:
-                if (h1, w1) != (h2, w2) and 0 <= (2*h1 - h2) < H and 0 <= (2*w1 - w2) < W:
+        l = len(positions)
+        for l1 in range(l):
+            for l2 in range(l1 + 1, l):
+                h1, w1 = positions[l1]
+                h2, w2 = positions[l2]
+                if 0 <= (2*h1 - h2) < H and 0 <= (2*w1 - w2) < W:
                     antinodes.add((2*h1 - h2, 2*w1-w2))
+                if 0 <= (2*h2 - h1) < H and 0 <= (2*w2 - w1) < W:
+                    antinodes.add((2*h2  - h1, 2*w2-w1))
 
     return len(antinodes)
 
@@ -94,7 +98,5 @@ print(f'ex1 : {ex1(load("input.txt"))}')
 # DEBUG = True
 assert ex2(load("sample.txt")) == 34
 print(f'ex2 : {ex2(load("input.txt"))}')
-
-
 
 sys.exit()
