@@ -59,17 +59,33 @@ def blink(stones: list) -> list:
             result.append(stone * 2024)
     return result
 
+seen_stones = dict()
+
+def blink_by_stone(stone: int, times_left: int) -> int:
+    stone_string = str(stone)
+    if times_left == 0:
+        return 1
+    elif (stone, times_left) in seen_stones:
+        return seen_stones[(stone, times_left)]
+    elif stone == 0:
+        res = blink_by_stone(1, times_left - 1)
+        seen_stones[(stone, times_left)] = res
+        return res
+    elif len(str(stone)) % 2 == 0:
+        res = blink_by_stone(int(stone_string[:len(stone_string) // 2]), times_left - 1) + blink_by_stone(int(stone_string[len(stone_string) // 2:]), times_left - 1)
+        seen_stones[(stone, times_left)] = res
+        return res
+    else:
+        res = blink_by_stone(stone * 2024, times_left - 1)
+        seen_stones[(stone, times_left)] = res
+        return res
 
 def ex(data: str, blinks = 25) -> int:
     """Solve ex1"""
 
     stones = list(map(int, data.split()))
 
-    for i in range(blinks):
-        print(i, len(stones))
-        stones = blink(stones)
-
-    return len(stones)
+    return sum([blink_by_stone(stone, blinks) for stone in stones])
 
 assert blink([0, 1, 10, 99, 999]) == [1, 2024, 1, 0, 9, 9, 2021976]
 assert ex('125 17', 6) == 22
