@@ -13,8 +13,6 @@ import re
 # import functools
 # from sympy import solve, symbols, Eq
 
-from PIL import Image
-
 def file_path(file):
     """Compute input file path"""
     return f'{path.dirname(sys.argv[0]) if path.dirname(sys.argv[0]) else "."}/{file}'
@@ -37,11 +35,10 @@ class Robot:
     def __str__(self) -> str:
         return "Robot %d with v = (%d, %d) is on point (%d, %d)\n" % (self.id, self.vh, self.vw, self.h, self.w)
 
-    def move(self) -> None:
+    def move(self, times = 1) -> None:
         """Move for 1 second"""
-        self.h = (self.h + self.vh) % self.H
-        self.w = (self.w + self.vw) % self.W
-    
+        self.h = (self.h + times * self.vh) % self.H
+        self.w = (self.w + times * self.vw) % self.W
 
 def load_data(data: str) -> tuple:
     """Loads data as a tuple"""
@@ -63,27 +60,16 @@ def ex1(data: str) -> int:
 
     robots, H, W = load_data(data)
 
-    for i in range(100):
-        for robot in robots:
-            robot.move()
+    for robot in robots:
+        robot.move(100)
 
-    q1 = sum([1 if robot.h < (H / 2) - 1 and robot.w < (W / 2) - 1 else 0 for robot in robots])
-    q2 = sum([1 if robot.h < (H / 2) - 1 and robot.w > (W / 2) else 0 for robot in robots])
-    q3 = sum([1 if robot.h > (H / 2) and robot.w < (W / 2) - 1 else 0 for robot in robots])
-    q4 = sum([1 if robot.h > (H / 2) and robot.w > (W / 2) else 0 for robot in robots])
+    q1 = sum([1 if robot.h < H // 2 and robot.w < W // 2 else 0 for robot in robots])
+    q2 = sum([1 if robot.h < H // 2 and robot.w > W // 2 else 0 for robot in robots])
+    q3 = sum([1 if robot.h > H // 2 and robot.w < W // 2 else 0 for robot in robots])
+    q4 = sum([1 if robot.h > H // 2 and robot.w > W // 2 else 0 for robot in robots])
     
     
     return q1*q2*q3*q4
-
-def save_picture(seconds: int, robots: list, H: int, W: int) -> str:
-    
-    img = Image.new('RGB', (W, H), "white")
-
-    for h in range(H):
-        for w in range(W):
-            if sum([(robot.h, robot.w) == (h, w) for robot in robots]) > 0:
-                img.putpixel((w, h), (0,0,0))
-    img.save('output/image%d.png' % seconds)
 
 def whole_picture(robots: list, H: int, W: int) -> str:
     res = ''
