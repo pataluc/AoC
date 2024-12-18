@@ -30,57 +30,54 @@ def load_data(data: str) -> list[tuple]:
 
 DEBUG = False
 
-def get_neighbours(pos, bytes, L):
-    x, y = pos
+def get_neighbours(x, y, bytes, L):
     ans = []
     for nx, ny in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]:
         if 0 <= nx < L and 0 <= ny < L and (nx, ny) not in bytes:
             ans.append((nx, ny))
     return ans
 
-def bfs(bytes, start, end, L):
-    queue = deque([(start, 0)])
-    visited = {start}
+def bfs(bytes, L):
+    queue = deque([(0, 0, 0)])
+    visited = set()
 
     while queue:
-        current, cost = queue.popleft()
+        x, y, cost = queue.popleft()
         # print("queue: ", queue)
         # print("visited: ", visited)
         # print("current: ", current)
         # print("neighbours: ", get_neighbours(current, bytes, L))
         # print()
-        for neighbour in get_neighbours(current, bytes, L):
-            if neighbour == end:
-                return cost + 1
-            if neighbour not in visited:
-                queue.append((neighbour, cost + 1))
-                visited.add(neighbour)
+        if (x, y) == (L-1, L-1):
+            return cost
+        if (x, y) in visited:
+            continue
+        visited.add((x, y))
+        for nx, ny in get_neighbours(x, y, bytes, L):
+            queue.append((nx, ny, cost + 1))
 
 def ex1(data: str, L = 71, after = 1024) -> int:
     """Solve ex1"""
 
     bytes = load_data(data)
-    # print(bytes)
-
-    # for y in range(L):
-    #     for x in range(L):
-    #         print('#' if (x, y) in bytes[:after] else '.', end='')
-    #     print()
     
-    ans = bfs(bytes[:after], (0, 0), (L-1, L-1), L)
-    # print(ans)
+    ans = bfs(bytes[:after], L)
     return ans
 
 def ex2(data: str, L = 71, after = 1024):
 
     bytes = load_data(data)
+    low = after
+    high = len(bytes) - 1
+    while low + 1 < high:
+        mid = (high + low) // 2
+        res = bfs(bytes[:mid], L)
+        if res:
+            low = mid
+        else:
+            high = mid
 
-    while bfs(bytes[:after], (0, 0), (L-1, L-1), L):
-        print(after)
-        after += 1
-
-    ans = "%d,%d" % bytes[after-1]
-    print(ans)
+    ans = "%d,%d" % bytes[low]
     return ans
 
 assert ex1(load("sample.txt"), 7, 12) == 22
@@ -88,7 +85,7 @@ print(f'ex1 : {ex1(load("input.txt"))}')
 
 # DEBUG = True
 assert ex2(load("sample.txt"), 7, 12) == '6,1'
-print(f'ex2 : {ex2(load("input.txt"), after = int(sys.argv[1] if len(sys.argv) > 1 else 1024))}')
+print(f'ex2 : {ex2(load("input.txt"))}')
 
 
 sys.exit()
