@@ -23,7 +23,7 @@ def load(file):
 
 def load_data(data: str) -> tuple:
     """Loads data as a tuple"""
-    
+
     robots_map, moves = data.split('\n\n')
     robots_map = list(map(list, robots_map.split('\n')))
     moves = list(moves.replace('\n', ''))
@@ -74,14 +74,9 @@ def ex1(data: str) -> int:
 
     robot = np.array((h, w))
 
-    # print("Initial state:")
-    # print("\n".join(map(lambda line: "".join(line), grid)))
     for move in moves:
         robot = move_robot(grid, H, W, robot, directions[move])
-        # print("\nMove %s:" % move)
-        # print("\n".join(map(lambda line: "".join(line), grid)))
 
-    # print("\n".join(map(lambda line: "".join(line), grid)))
     ans = 0
     for h in range(H):
         for w in range(W):
@@ -115,7 +110,7 @@ def move_robot2(grid: list, H: int, W: int, robot: np.array, move: np.array) -> 
                         nh, nw = new_pos
                         grid[ph][pw] = grid[nh][nw]
                     grid[rh][rw] = '.'
-                    
+
                     return np.array(robot + move)
             else: # Déplacement vertical
                 points_to_move = [{(nh, nw), (nh, nw + 1 if grid[nh][nw] == '[' else nw - 1)}]
@@ -133,12 +128,15 @@ def move_robot2(grid: list, H: int, W: int, robot: np.array, move: np.array) -> 
                         elif grid[ph+move[0]][pw] == ']':
                             next_floor.add((ph+move[0], pw - 1))
                             next_floor.add((ph+move[0], pw))
+                        elif grid[ph+move[0]][pw] == '#':
+                            return np.array(robot)
+
                     if len(next_floor) > 0:
                         points_to_move.append(next_floor)
                     floor += move[0]
                     ws = [p[1] for p in points_to_move[-1]]
                     f = grid[floor][min(ws):max(ws)+1]
-                
+
                 if '#' not in f:
                     points_to_move.reverse()
                     for points in points_to_move:
@@ -147,7 +145,7 @@ def move_robot2(grid: list, H: int, W: int, robot: np.array, move: np.array) -> 
                             grid[xh][xw] = '.'
                     grid[rh][rw] = '.'
                     grid[rh+move[0]][rw] = '@'
-                    
+
                     return np.array(robot + move)
 
 
@@ -175,7 +173,7 @@ def ex2(data: str):
 
     grid = double_grid
     W = 2*W
-    
+
     h, w = (1, 1)
     while grid[h][w] != '@':
         w += 1
@@ -185,24 +183,11 @@ def ex2(data: str):
 
     robot = np.array((h, w))
 
-    # print("Initial state:")
-    # print("\n".join(map(lambda line: "".join(line), grid)))
-    # print("Robot: ", robot)
     for i, move in enumerate(moves):
         robot = move_robot2(grid, H, W, robot, directions[move])
-        system('clear')
-        print("\nMove %s (%d / %d):" % (move, i, len(moves)))
-        print("\n".join(map(lambda line: "".join(line), grid)))
-        print()
-        print("Robot: ", robot)
-    
-
-#    print("=========== FINAL ==============")
-    print("\n".join(map(lambda line: "".join(line), grid)))
-#    print("Robot: ", robot)
 
 
-    # print("\n".join(map(lambda line: "".join(line), grid)))
+
     ans = 0
     for h in range(H):
         for w in range(W):
@@ -213,11 +198,11 @@ def ex2(data: str):
     return ans
 
 
-# assert ex1(load("samplesmall.txt")) == 2028
-# assert ex1(load("samplebig.txt")) == 10092
-# print(f'ex1 : {ex1(load("input.txt"))}')
+assert ex1(load("samplesmall.txt")) == 2028
+assert ex1(load("samplebig.txt")) == 10092
+print(f'ex1 : {ex1(load("input.txt"))}')
 
-# assert ex2(load("samplebig.txt")) == 9021
+assert ex2(load("samplebig.txt")) == 9021
 print(f'ex2 : {ex2(load("input.txt"))}')
 
 
