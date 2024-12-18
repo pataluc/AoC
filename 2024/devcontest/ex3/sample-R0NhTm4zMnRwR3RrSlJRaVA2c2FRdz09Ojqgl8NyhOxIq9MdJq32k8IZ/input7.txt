@@ -1,0 +1,11 @@
+10
+Purple Black Brown
+Brown Green Orange
+Blue Red Yellow
+Yellow Green Red
+Yellow Grey Brown
+Green Blue Black
+Purple Purple Black
+Brown Black Black
+Blue Orange Black
+Blue Brown Orange

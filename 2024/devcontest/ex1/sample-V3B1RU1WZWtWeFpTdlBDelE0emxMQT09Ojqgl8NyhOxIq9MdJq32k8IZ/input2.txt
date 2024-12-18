@@ -1,0 +1,11 @@
+10
+11 blue
+12 yellow
+14 blue
+15 blue
+13 red
+11 red
+6 yellow
+14 green
+9 red
+14 blue

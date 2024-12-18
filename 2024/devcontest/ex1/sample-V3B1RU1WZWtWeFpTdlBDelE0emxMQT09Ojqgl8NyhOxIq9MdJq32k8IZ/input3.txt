@@ -1,0 +1,16 @@
+15
+73 yellow
+77 orange
+51 green
+80 purple
+66 orange
+77 purple
+45 blue
+19 orange
+80 green
+97 blue
+48 purple
+47 red
+50 orange
+31 red
+50 orange
