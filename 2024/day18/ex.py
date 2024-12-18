@@ -3,9 +3,9 @@ from __future__ import annotations
 from os import path
 # from copy import deepcopy
 import sys
-from collections import defaultdict, deque
+from collections import deque
 # import math
-import re
+# import re
 # from colorama import Fore
 # import numpy as np
 # from heapq import *
@@ -24,20 +24,22 @@ def load(file):
 def load_data(data: str) -> list[tuple]:
     """Loads data as a tuple"""
 
-    bytes = [tuple(int(coord) for coord in line.split(',')) for line in data.split('\n')]
+    bytes_positions = [tuple(int(coord) for coord in line.split(',')) for line in data.split('\n')]
 
-    return bytes
+    return bytes_positions
 
 DEBUG = False
 
-def get_neighbours(x, y, bytes, L):
+def get_neighbours(x: int, y: int, bytes_positions: list, L: int) -> list:
+    """Neighbours of (x, y) in bytes map"""
     ans = []
     for nx, ny in [(x-1, y), (x+1, y), (x, y-1), (x, y+1)]:
-        if 0 <= nx < L and 0 <= ny < L and (nx, ny) not in bytes:
+        if 0 <= nx < L and 0 <= ny < L and (nx, ny) not in bytes_positions:
             ans.append((nx, ny))
     return ans
 
-def bfs(bytes, L):
+def bfs(bytes_positions: list, L: int)-> int:
+    """BFS algo"""
     queue = deque([(0, 0, 0)])
     visited = set()
 
@@ -53,31 +55,33 @@ def bfs(bytes, L):
         if (x, y) in visited:
             continue
         visited.add((x, y))
-        for nx, ny in get_neighbours(x, y, bytes, L):
+        for nx, ny in get_neighbours(x, y, bytes_positions, L):
             queue.append((nx, ny, cost + 1))
+    return 0
 
 def ex1(data: str, L = 71, after = 1024) -> int:
     """Solve ex1"""
 
-    bytes = load_data(data)
-    
-    ans = bfs(bytes[:after], L)
+    bytes_positions = load_data(data)
+
+    ans = bfs(bytes_positions[:after], L)
     return ans
 
 def ex2(data: str, L = 71, after = 1024):
+    """Solving ex2"""
 
-    bytes = load_data(data)
+    bytes_positions = load_data(data)
     low = after
-    high = len(bytes) - 1
+    high = len(bytes_positions) - 1
     while low + 1 < high:
         mid = (high + low) // 2
-        res = bfs(bytes[:mid], L)
+        res = bfs(bytes_positions[:mid], L)
         if res:
             low = mid
         else:
             high = mid
 
-    ans = "%d,%d" % bytes[low]
+    ans = f"{bytes_positions[low][0]},{bytes_positions[low][1]}"
     return ans
 
 assert ex1(load("sample.txt"), 7, 12) == 22
