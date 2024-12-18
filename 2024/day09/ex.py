@@ -3,14 +3,13 @@ from __future__ import annotations
 from os import path
 # from copy import deepcopy
 import sys
-from collections import defaultdict
+# from collections import defaultdict
 # import math
 # import re
 # from colorama import Fore
 # import numpy as np
 # from heapq import *
 # import networkx as nx
-import functools
 
 def file_path(file):
     """Compute input file path"""
@@ -20,37 +19,7 @@ def load(file):
     """Load file"""
     return open(file_path(file), "r", encoding='utf-8').read().rstrip()
 
-def load_data(data: str) -> dict:
-    """Loads data as a tuple"""
-
-    result = defaultdict(list)
-    grid = [line for line in data.split('\n')]
-    H = len(grid)
-    W = len(grid[0])
-
-    for h in range(H):
-        for w in range(W):
-            c = grid[h][w]
-            if c != '.':
-                result[c].append((h, w))
-
-    return result, H, W
-
 DEBUG = False
-
-# def print_grid(H, W, antennas, antinodes):
-#     for h in range(H):
-#         for w in range(W):
-#             if (h, w) in antinodes:
-#                 print('#', end='')
-#             elif any([(h, w) in antenna_letter for antenna_letter in antennas.values()]):
-#                 print('@', end='')
-#             else:
-#                 print('.', end='')
-#         print('')
-
-def pretty_print(data: list):
-    print(''.join(map(lambda x: str(x) if x >=0 else '.', data)))
 
 def get_disk(data: str) -> list:
     """get disk content from disk map"""
@@ -90,61 +59,52 @@ def get_disk2(data: str) -> list:
 
     return result
 
-def pretty_print2(data: list):
-    result = ''
-    for i, l in data:
-        result += (str(i) if i >= 0 else '.') * l
-    return result
-
 def ex2(data: str) -> int:
-    """Solve ex1"""
+    """Solve ex2"""
 
     disk_data = get_disk2(data)
-    # print(pretty_print2(disk_data))
-
     max_id = len(disk_data) // 2
 
-    for file_id in range(max_id, 0, -1):
+    for file_to_move_id in range(max_id, 0, -1):
+        # Finding file to move pos
         index = -1
         for i in range(len(disk_data) - 1, 0, -1):
-            if disk_data[i][0] == file_id:
+            if disk_data[i][0] == file_to_move_id:
                 index = i
                 break
-        file_size = disk_data[index][1]
-        print("procesing %d of size %d" % (file_id, file_size))
-        if file_id % 100 == 0: print('trying to move %d which is %d blocks long' % (file_id, file_size))
-        for i, file in enumerate(disk_data):
-            if file[0] == -1 and i < index:
-                if file[1] == file_size:
-                    print("  there some space on %d" % i)
-                    disk_data[i] = (file_id, file_size)
-                    disk_data[index] = (-1, file_size)
+        _, file_to_move_size = disk_data[index]
+        for i, (file_id, file_size) in enumerate(disk_data):
+            if file_id == -1 and i < index:
+                if file_to_move_size == file_size:
+                    disk_data[i] = (file_to_move_id, file_to_move_size)
+                    disk_data[index] = (-1, file_to_move_size)
                     break
-                elif file[1] >= file_size:
-                    print("  there some space on %d" % i)
-                    disk_data[index] = (-1, file_size)
-                    disk_data = disk_data[:i] + [(file_id, file_size), (-1, file[1] - file_size)] + disk_data[i+1:-1]
+                if file_to_move_size < file_size:
+                    disk_data[index] = (-1, file_to_move_size)
+                    disk_data = disk_data[:i] + \
+                        [(file_to_move_id, file_to_move_size), \
+                            (-1, file_size - file_to_move_size)] + \
+                        disk_data[i+1:-1]
                     break
-        else:
-            print("  can't move it")
 
-        # print(pretty_print2(disk_data))
+    disk_data_array = []
+    for i, l in disk_data:
+        disk_data_array += [max(0, i)] * l
 
     result = 0
-    for i, v in enumerate(list(pretty_print2(disk_data))):
-        # print(i, v)
-        if v != '.':
-            result += i*int(v)
+    for i, v in enumerate(disk_data_array):
+        result += i * v
     return result
 
 
-# assert ''.join(map(lambda x: str(x) if x >=0 else '.', get_disk(load("sample.txt")))) == '00...111...2...333.44.5555.6666.777.888899'
-# assert ex1(load("sample.txt")) == 1928
-# print(f'ex1 : {ex1(load("input.txt"))}')
+assert ''.join(map(lambda x: str(x) if x >=0 else '.', \
+            get_disk(load("sample.txt")))) == '00...111...2...333.44.5555.6666.777.888899'
+assert ex1(load("sample.txt")) == 1928
+print(f'ex1 : {ex1(load("input.txt"))}')
 
 
 # DEBUG = True
 assert ex2(load("sample.txt")) == 2858
-# print(f'ex2 : {ex2(load("input.txt"))}')
+print(f'ex2 : {ex2(load("input.txt"))}')
 
 sys.exit()
