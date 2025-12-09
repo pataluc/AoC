@@ -5,7 +5,11 @@ from __future__ import annotations
 from os import path
 import sys
 import math
-import networkx as nx
+from shapely import Polygon
+from shapely import Point
+import shapely.plotting
+import matplotlib.pyplot as plt
+
 
 def file_path(file):
     """Compute input file path"""
@@ -45,22 +49,27 @@ def ex2(data: str) -> int:
     """Solve ex2"""
     redtiles = load_data(data)
 
+    P = Polygon(redtiles)
+
+
+    # print(P)
     result = 0
     for i, (x1, y1) in enumerate(redtiles):
         for j in range(i+1, len(redtiles)):
             x2, y2 = redtiles[j]
-            area = (1+abs(x2-x1))*(1+abs(y2-y1))
-            if area > result:
-                c = True
-                for k, (x3, y3) in enumerate(redtiles):
-                    print(result, area, (x1, y1, i), (x2, y2, j), (x3, y3, k), k not in [i,j] , between(x1, x2, x3) , between(y1, y2, y3))
-                    if k not in [i,j] and between(x1, x2, x3) and between(y1, y2, y3):
-                        c = False
-                        break
-                if c:
-                    result = area
-    print(result)
-    return result
+
+            R = Polygon([(x1, y1), (x1, y2), (x2, y2), (x2, y1)])
+
+            if P.contains(R):
+                # fig, ax = plt.subplots()
+                # shapely.plotting.plot_polygon(P, ax=ax)
+                # shapely.plotting.plot_polygon(R, ax=ax, color="red")
+                # plt.savefig(f"test{i}-{j}.png")
+                # plt.close()
+
+                result = max(result, (1+abs(x2-x1))*(1+abs(y2-y1)))
+    # print(result)
+    return int(result)
 
 
 
